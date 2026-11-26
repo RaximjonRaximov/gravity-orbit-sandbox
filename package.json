@@ -1,0 +1,25 @@
+{
+  "name": "gravity-orbit-sandbox",
+  "version": "1.0.0",
+  "description": "Interactive N-Body Celestial Gravity Simulator & Solar System Forge with Express API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "astrophysics",
+    "gravity-simulator",
+    "n-body",
+    "physics-engine",
+    "canvas",
+    "nodejs"
+  ],
+  "author": "Raximjon Raximov",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}

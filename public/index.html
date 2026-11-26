@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRAVITY ORBIT // N-Body Astrophysics Simulator</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Top System Header -->
+    <header id="top-nav">
+      <div class="brand">
+        <span class="pulsar-icon"></span>
+        <div class="titles">
+          <h1>GRAVITY ORBIT</h1>
+          <span class="subtitle">N-BODY ASTROPHYSICS & CELESTIAL MECHANICS SIMULATOR</span>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="control-cluster">
+        <button id="btn-play-pause" class="btn primary-btn">⏸️ PAUSE</button>
+        <button id="btn-reset" class="btn secondary-btn">↺ RESET</button>
+        <button id="btn-clear" class="btn danger-btn">🗑️ CLEAR</button>
+
+        <div class="slider-group">
+          <label>WARP: <span id="val-warp">1.0x</span></label>
+          <input type="range" id="slider-warp" min="0.1" max="5.0" step="0.1" value="1.0">
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="metric-chip">BODIES: <strong id="hud-body-count" class="glow-cyan">0</strong></div>
+        <div class="metric-chip">FPS: <strong id="hud-fps" class="glow-green">60</strong></div>
+        <button id="btn-share" class="btn-icon" title="Save / Share System">💾</button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div id="workspace">
+      <!-- Canvas Viewport -->
+      <main id="canvas-shell">
+        <canvas id="cosmos-canvas"></canvas>
+
+        <!-- Dynamic Overlay Hint -->
+        <div class="canvas-hint" id="canvas-hint">
+          💡 Click and drag in space to launch a new celestial body. Scroll wheel to zoom, drag with Right Click to pan.
+        </div>
+
+        <!-- Telemetry Floating Widget -->
+        <div class="telemetry-box" id="telemetry-deck">
+          <div class="telemetry-header">ORBITAL TELEMETRY</div>
+          <div class="tel-row">
+            <span>Center of Mass:</span>
+            <span id="tel-com" class="glow-cyan">(0.0, 0.0)</span>
+          </div>
+          <div class="tel-row">
+            <span>Kinetic Energy (K):</span>
+            <span id="tel-ke">0.00 J</span>
+          </div>
+          <div class="tel-row">
+            <span>Potential Energy (U):</span>
+            <span id="tel-pe">0.00 J</span>
+          </div>
+          <div class="tel-row">
+            <span>Virial Stability:</span>
+            <span id="tel-virial" class="badge-stability">Analyzing...</span>
+          </div>
+          <button id="btn-server-validate" class="btn-validate">API STABILITY CHECK</button>
+        </div>
+      </main>
+
+      <!-- Sidebar Controls -->
+      <aside id="sidebar-controls">
+        <!-- Preset Selector -->
+        <div class="deck-section">
+          <h3>CELESTIAL PRESETS</h3>
+          <div class="preset-grid">
+            <button class="preset-btn active" data-preset="solar_system">☀️ Solar System</button>
+            <button class="preset-btn" data-preset="binary_stars">✨ Binary Stars</button>
+            <button class="preset-btn" data-preset="three_body_figure8">♾️ Figure-8 3-Body</button>
+            <button class="preset-btn" data-preset="asteroid_belt">🪐 Asteroid Belt</button>
+          </div>
+        </div>
+
+        <!-- Spawner Configuration -->
+        <div class="deck-section">
+          <h3>ORBITAL FORGE (SPAWNER)</h3>
+          <div class="control-row">
+            <label>Archetype:</label>
+            <div class="archetype-chips">
+              <button class="chip active" data-mass="5" data-radius="6" data-color="#00b4d8">Terrestrial</button>
+              <button class="chip" data-mass="80" data-radius="14" data-color="#f4a261">Gas Giant</button>
+              <button class="chip" data-mass="10000" data-radius="22" data-color="#ffcc00">Star</button>
+              <button class="chip" data-mass="45000" data-radius="12" data-color="#9d4edd">Black Hole</button>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <label>Custom Mass: <span id="val-spawn-mass">5.0</span></label>
+            <input type="range" id="slider-spawn-mass" min="0.1" max="25000" step="1" value="5">
+          </div>
+
+          <div class="control-row">
+            <label>Color Palette:</label>
+            <input type="color" id="spawn-color" value="#00f3ff">
+          </div>
+        </div>
+
+        <!-- Simulation Physics -->
+        <div class="deck-section">
+          <h3>PHYSICS ENGINE CONFIG</h3>
+          <div class="control-row">
+            <label>Gravity Constant (G): <span id="val-gravity">1.0</span></label>
+            <input type="range" id="slider-gravity" min="0.0" max="3.0" step="0.1" value="1.0">
+          </div>
+
+          <div class="control-row">
+            <label>Collision Dynamic:</label>
+            <select id="select-collision" class="dark-select">
+              <option value="merge">Merge & Accrete Mass</option>
+              <option value="bounce">Elastic Bounce</option>
+              <option value="ignore">Ghost (Pass Through)</option>
+            </select>
+          </div>
+
+          <div class="control-row">
+            <label>Orbital Trail Length: <span id="val-trails">80</span></label>
+            <input type="range" id="slider-trails" min="0" max="250" step="10" value="80">
+          </div>
+
+          <div class="toggle-group">
+            <label class="toggle-item">
+              <input type="checkbox" id="check-vectors" checked> Show Velocity Vectors
+            </label>
+            <label class="toggle-item">
+              <input type="checkbox" id="check-grid" checked> Spatial Grid
+            </label>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Save / Share Modal -->
+    <div id="modal-share" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h2>SAVE CELESTIAL SYSTEM</h2>
+          <button id="btn-close-modal" class="btn-close">×</button>
+        </div>
+        <p class="modal-desc">Publish your custom cosmic arrangement to the community archive.</p>
+        <form id="form-save-system">
+          <label for="input-sys-name">SYSTEM DESIGNATION:</label>
+          <input type="text" id="input-sys-name" required placeholder="e.g. Proxima Centauri Triad" maxlength="35">
+          <label for="input-author">ASTROPHYSICIST / PILOT:</label>
+          <input type="text" id="input-author" placeholder="Explorer" maxlength="25">
+          <div class="modal-actions">
+            <button type="submit" class="btn primary-btn">PUBLISH TO ARCHIVE</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="simulator.js"></script>
+</body>
+</html>
